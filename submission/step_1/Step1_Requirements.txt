@@ -1,0 +1,14 @@
+Users can search course title and description by free-text keywords.
+Users can filter courses by minimum rating.
+Users can filter or sort courses by duration.
+Users can facet courses by source (MS Learn, Udacity, Company Moodle, and others).
+Users can facet courses by role.
+Users can facet courses by product/technology.
+Users can facet courses by level.
+Users can sort courses by rating or popularity.
+Users can retrieve course URL and metadata in search hits.
+Users can see enriched instructor biography text for Moodle instructors.
+Users can full-text search curated PDF articles in the research library.
+Users can search or filter papers by author and institution when extracted from documents.
+Users can search papers by publication name, publisher, and publication date.
+Users can obtain the DOI for a paper in the result set.

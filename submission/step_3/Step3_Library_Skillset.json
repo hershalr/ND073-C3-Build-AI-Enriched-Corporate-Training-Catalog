@@ -1,0 +1,148 @@
+{
+  "name": "search-1790884495622-skillset",
+  "description": null,
+  "skills": [
+    {
+      "@odata.type": "#Microsoft.Skills.Text.LanguageDetectionSkill",
+      "name": "languageDetectionSkill",
+      "description": null,
+      "context": "/document",
+      "defaultCountryHint": null,
+      "modelVersion": null,
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/content",
+          "sourceContext": null,
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "languageCode",
+          "targetName": "language"
+        }
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.KeyPhraseExtractionSkill",
+      "name": "keyPhraseExtractionSkill",
+      "description": null,
+      "context": "/document/content",
+      "defaultLanguageCode": "en",
+      "maxKeyPhraseCount": null,
+      "modelVersion": null,
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/content",
+          "sourceContext": null,
+          "inputs": []
+        },
+        {
+          "name": "languageCode",
+          "source": "/document/language",
+          "sourceContext": null,
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "keyPhrases",
+          "targetName": "keyPhrases"
+        }
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
+      "name": "SpringerLookupSkill",
+      "description": "Call Azure Function SpringerLookup for publication metadata",
+      "context": "/document",
+      "uri": "https://catalog-springer-1002-bch4dcf4brdsgnd7.southcentralus-01.azurewebsites.net/api/SpringerLookup?code=<redacted>",
+      "httpMethod": "POST",
+      "timeout": "PT30S",
+      "batchSize": 1,
+      "degreeOfParallelism": 1,
+      "authResourceId": null,
+      "inputs": [
+        {
+          "name": "ArticleName",
+          "source": "/document/metadata_storage_name",
+          "sourceContext": null,
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "PublicationName",
+          "targetName": "PublicationName"
+        },
+        {
+          "name": "Publisher",
+          "targetName": "Publisher"
+        },
+        {
+          "name": "DOI",
+          "targetName": "DOI"
+        },
+        {
+          "name": "PublicationDate",
+          "targetName": "PublicationDate"
+        }
+      ],
+      "httpHeaders": {},
+      "authIdentity": null
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.V3.EntityRecognitionSkill",
+      "name": "entityRecognitionSkill",
+      "description": null,
+      "context": "/document/content",
+      "categories": [
+        "Person",
+        "Location",
+        "Organization"
+      ],
+      "defaultLanguageCode": "en",
+      "minimumPrecision": null,
+      "modelVersion": null,
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/content",
+          "sourceContext": null,
+          "inputs": []
+        },
+        {
+          "name": "languageCode",
+          "source": "/document/language",
+          "sourceContext": null,
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "persons",
+          "targetName": "persons"
+        },
+        {
+          "name": "locations",
+          "targetName": "locations"
+        },
+        {
+          "name": "organizations",
+          "targetName": "organizations"
+        }
+      ]
+    }
+  ],
+  "cognitiveServices": {
+    "@odata.type": "#Microsoft.Azure.Search.AIServicesByKey",
+    "description": null,
+    "key": "<redacted>",
+    "subdomainUrl": "https://catalog-ai-1002.cognitiveservices.azure.com/"
+  },
+  "knowledgeStore": null,
+  "indexProjections": null,
+  "encryptionKey": null
+}

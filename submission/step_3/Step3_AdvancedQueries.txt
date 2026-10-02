@@ -1,0 +1,335 @@
+Step 3 — Advanced queries (enrichments)
+=======================================
+Service: catalog-search-1002
+Courses index: search-1790894939519
+Library index: search-1790884495622
+
+How to run: Indexes → <index> → Search explorer → JSON request view → paste body → Search.
+Semantic search OFF. Paste Results under each query.
+
+------------------------------------------------------------------------
+ADV1 — Moodle instructor profile enrichment (Mike)
+------------------------------------------------------------------------
+Index: search-1790894939519
+
+{
+  "search": "Mike Montoya",
+  "select": "title,instructor,instructorProfiles,source",
+  "top": 5,
+  "count": true
+}
+
+Results:
+
+{
+  "@odata.context": "https://catalog-search-1002.search.windows.net/indexes('search-1790894939519')/$metadata#docs(*)",
+  "@odata.count": 3,
+  "value": [
+    {
+      "@search.score": 4.4786596,
+      "instructor": "Mike Montoya",
+      "source": "Company Moodle",
+      "title": "Onboarding - Technology Policies ",
+      "instructorProfiles": "[\"Mike  is our HR trainer responsible for helping employees be successful in their careers at our company.  He has been with us for 3 years. Mike is an amateur chef and enjoys outdoor live music events.\"]"
+    },
+    {
+      "@search.score": 4.4786596,
+      "instructor": "Mike Montoya",
+      "source": "Company Moodle",
+      "title": "Onboarding - Time Tracking ",
+      "instructorProfiles": "[\"Mike  is our HR trainer responsible for helping employees be successful in their careers at our company.  He has been with us for 3 years. Mike is an amateur chef and enjoys outdoor live music events.\"]"
+    },
+    {
+      "@search.score": 4.4786596,
+      "instructor": "Mike Montoya",
+      "source": "Company Moodle",
+      "title": "Workplace Health",
+      "instructorProfiles": "[\"Mike  is our HR trainer responsible for helping employees be successful in their careers at our company.  He has been with us for 3 years. Mike is an amateur chef and enjoys outdoor live music events.\"]"
+    }
+  ]
+}
+
+------------------------------------------------------------------------
+ADV2 — Filter Moodle + show profiles
+------------------------------------------------------------------------
+Index: search-1790894939519
+
+{
+  "search": "*",
+  "filter": "source eq 'Company Moodle'",
+  "select": "title,instructor,instructorProfiles",
+  "top": 10,
+  "count": true
+}
+
+Results:
+
+{
+  "@odata.context": "https://catalog-search-1002.search.windows.net/indexes('search-1790894939519')/$metadata#docs(*)",
+  "@odata.count": 14,
+  "value": [
+    {
+      "@search.score": 1,
+      "instructor": "Gerald Dominguez",
+      "title": "O365",
+      "instructorProfiles": "[\"Gerald is a Junior IT Administrator and has been with the company for 1 year. Gerald played NCAA soccer and is a part-time soccer coach on weekends. \"]"
+    },
+    {
+      "@search.score": 1,
+      "instructor": "Eileen Diaz",
+      "title": "Security for database code",
+      "instructorProfiles": "[\"Eileen is our Senior Security Engineer responsible for application and service security. She has been with the company for 9 years and enjoys writing Sci-Fi in her spare time.\"]"
+    },
+    {
+      "@search.score": 1,
+      "instructor": "Mike Montoya",
+      "title": "Onboarding - Technology Policies ",
+      "instructorProfiles": "[\"Mike  is our HR trainer responsible for helping employees be successful in their careers at our company.  He has been with us for 3 years. Mike is an amateur chef and enjoys outdoor live music events.\"]"
+    },
+    {
+      "@search.score": 1,
+      "instructor": "Robert Gillis",
+      "title": "Maps",
+      "instructorProfiles": "[\"Robert is our GIS specialist in charge of making beautiful maps for our users. He has been with the company for 8 years and enjoys hiking, fishing, and any other outdoor activity.\"]"
+    },
+    {
+      "@search.score": 1,
+      "instructor": "Claudia Blackman",
+      "title": "DevOps for Ops",
+      "instructorProfiles": "[\"Claudia is our senior DevOps engineer. She is charged with overseeing our DevOps operations and has been with the company for 2 years. Claudia enjoys downhill skiing and is a member of the local Search & Rescue Team.\"]"
+    },
+    {
+      "@search.score": 1,
+      "instructor": "Mike Montoya",
+      "title": "Onboarding - Time Tracking ",
+      "instructorProfiles": "[\"Mike  is our HR trainer responsible for helping employees be successful in their careers at our company.  He has been with us for 3 years. Mike is an amateur chef and enjoys outdoor live music events.\"]"
+    },
+    {
+      "@search.score": 1,
+      "instructor": "Eileen Diaz",
+      "title": "Ethics in AI",
+      "instructorProfiles": "[\"Eileen is our Senior Security Engineer responsible for application and service security. She has been with the company for 9 years and enjoys writing Sci-Fi in her spare time.\"]"
+    },
+    {
+      "@search.score": 1,
+      "instructor": "Eileen Diaz",
+      "title": "Security for database admins",
+      "instructorProfiles": "[\"Eileen is our Senior Security Engineer responsible for application and service security. She has been with the company for 9 years and enjoys writing Sci-Fi in her spare time.\"]"
+    },
+    {
+      "@search.score": 1,
+      "instructor": "Claudia Blackman",
+      "title": "Git Workflow ",
+      "instructorProfiles": "[\"Claudia is our senior DevOps engineer. She is charged with overseeing our DevOps operations and has been with the company for 2 years. Claudia enjoys downhill skiing and is a member of the local Search & Rescue Team.\"]"
+    },
+    {
+      "@search.score": 1,
+      "instructor": "Eileen Diaz",
+      "title": "Encryption and security",
+      "instructorProfiles": "[\"Eileen is our Senior Security Engineer responsible for application and service security. She has been with the company for 9 years and enjoys writing Sci-Fi in her spare time.\"]"
+    }
+  ]
+}
+
+------------------------------------------------------------------------
+ADV3 — Search inside instructor profile bios
+------------------------------------------------------------------------
+Index: search-1790894939519
+(Prefer filter+keyword so MS Learn noise does not dominate)
+
+{
+  "search": "skiing",
+  "filter": "source eq 'Company Moodle'",
+  "select": "title,instructor,instructorProfiles,source",
+  "top": 5,
+  "count": true
+}
+
+Results:
+
+{
+  "@odata.context": "https://catalog-search-1002.search.windows.net/indexes('search-1790894939519')/$metadata#docs(*)",
+  "@odata.count": 3,
+  "value": [
+    {
+      "@search.score": 1.3179165,
+      "instructor": "Claudia Blackman",
+      "source": "Company Moodle",
+      "title": "DevOps for Ops",
+      "instructorProfiles": "[\"Claudia is our senior DevOps engineer. She is charged with overseeing our DevOps operations and has been with the company for 2 years. Claudia enjoys downhill skiing and is a member of the local Search & Rescue Team.\"]"
+    },
+    {
+      "@search.score": 1.3179165,
+      "instructor": "Claudia Blackman",
+      "source": "Company Moodle",
+      "title": "Git Workflow ",
+      "instructorProfiles": "[\"Claudia is our senior DevOps engineer. She is charged with overseeing our DevOps operations and has been with the company for 2 years. Claudia enjoys downhill skiing and is a member of the local Search & Rescue Team.\"]"
+    },
+    {
+      "@search.score": 1.3179165,
+      "instructor": "Claudia Blackman",
+      "source": "Company Moodle",
+      "title": "DevOps for Dev",
+      "instructorProfiles": "[\"Claudia is our senior DevOps engineer. She is charged with overseeing our DevOps operations and has been with the company for 2 years. Claudia enjoys downhill skiing and is a member of the local Search & Rescue Team.\"]"
+    }
+  ]
+}
+
+------------------------------------------------------------------------
+ADV4 — Springer publication metadata (Publisher present)
+------------------------------------------------------------------------
+Index: search-1790884495622
+
+{
+  "search": "*",
+  "filter": "Publisher ne null",
+  "select": "title,PublicationName,Publisher,DOI,PublicationDate",
+  "top": 5,
+  "count": true
+}
+
+Results (non-empty Publisher):
+
+{
+  "@odata.context": "https://catalog-search-1002.search.windows.net/indexes('search-1790884495622')/$metadata#docs(*)",
+  "@odata.count": 18,
+  "value": [
+    {
+      "@search.score": 1.0,
+      "title": "s13173-013-0117-7.pdf",
+      "PublicationName": "Systematic Reviews",
+      "PublicationDate": "2024-02-08",
+      "Publisher": "Springer",
+      "DOI": "10.1186/s13643-024-02451-1"
+    },
+    {
+      "@search.score": 1.0,
+      "title": "s13640-018-0373-8.pdf",
+      "PublicationName": "EURASIP Journal on Image and Video Processing",
+      "PublicationDate": "2018-11-27",
+      "Publisher": "Springer",
+      "DOI": "10.1186/s13640-018-0373-8"
+    },
+    {
+      "@search.score": 1.0,
+      "title": "s13640-020-00545-z.pdf",
+      "PublicationName": "Heritage Science",
+      "PublicationDate": "2023-03-14",
+      "Publisher": "Nature",
+      "DOI": "10.1186/s40494-023-00898-4"
+    },
+    {
+      "@search.score": 1.0,
+      "title": "s13673-018-0135-8.pdf",
+      "PublicationName": "Journal of Big Data",
+      "PublicationDate": "2023-01-13",
+      "Publisher": "Springer",
+      "DOI": "10.1186/s40537-022-00680-6"
+    },
+    {
+      "@search.score": 1.0,
+      "title": "s13673-019-0177-6.pdf",
+      "PublicationName": "Human-centric Computing and Information Sciences",
+      "PublicationDate": "2019-09-04",
+      "Publisher": "Springer",
+      "DOI": "10.1186/s13673-019-0195-4"
+    }
+  ]
+}
+
+------------------------------------------------------------------------
+ADV5 — Springer DOI present
+------------------------------------------------------------------------
+Index: search-1790884495622
+
+{
+  "search": "*",
+  "filter": "DOI ne null",
+  "select": "title,PublicationName,DOI,PublicationDate",
+  "top": 5,
+  "count": true
+}
+
+Results (non-empty DOI):
+
+{
+  "@odata.context": "https://catalog-search-1002.search.windows.net/indexes('search-1790884495622')/$metadata#docs(*)",
+  "@odata.count": 18,
+  "value": [
+    {
+      "@search.score": 1.0,
+      "title": "s13173-013-0117-7.pdf",
+      "PublicationName": "Systematic Reviews",
+      "PublicationDate": "2024-02-08",
+      "Publisher": "Springer",
+      "DOI": "10.1186/s13643-024-02451-1"
+    },
+    {
+      "@search.score": 1.0,
+      "title": "s13640-018-0373-8.pdf",
+      "PublicationName": "EURASIP Journal on Image and Video Processing",
+      "PublicationDate": "2018-11-27",
+      "Publisher": "Springer",
+      "DOI": "10.1186/s13640-018-0373-8"
+    },
+    {
+      "@search.score": 1.0,
+      "title": "s13640-020-00545-z.pdf",
+      "PublicationName": "Heritage Science",
+      "PublicationDate": "2023-03-14",
+      "Publisher": "Nature",
+      "DOI": "10.1186/s40494-023-00898-4"
+    },
+    {
+      "@search.score": 1.0,
+      "title": "s13673-018-0135-8.pdf",
+      "PublicationName": "Journal of Big Data",
+      "PublicationDate": "2023-01-13",
+      "Publisher": "Springer",
+      "DOI": "10.1186/s40537-022-00680-6"
+    },
+    {
+      "@search.score": 1.0,
+      "title": "s13673-019-0177-6.pdf",
+      "PublicationName": "Human-centric Computing and Information Sciences",
+      "PublicationDate": "2019-09-04",
+      "Publisher": "Springer",
+      "DOI": "10.1186/s13673-019-0195-4"
+    }
+  ]
+}
+
+------------------------------------------------------------------------
+ADV6 — generative adversarial + Springer fields
+------------------------------------------------------------------------
+Index: search-1790884495622
+
+{
+  "search": "\"generative adversarial\"",
+  "select": "title,PublicationName,Publisher,DOI",
+  "top": 3,
+  "count": true
+}
+
+Results:
+
+{
+  "@odata.context": "https://catalog-search-1002.search.windows.net/indexes('search-1790884495622')/$metadata#docs(*)",
+  "@odata.count": 2,
+  "value": [
+    {
+      "@search.score": 8.547417,
+      "title": "Liang-Lin2021_Article_MachineLearningForDigitalTry-o.pdf",
+      "PublicationName": "",
+      "Publisher": "",
+      "DOI": ""
+    },
+    {
+      "@search.score": 7.3797526,
+      "title": "s13673-019-0177-6.pdf",
+      "PublicationName": "Human-centric Computing and Information Sciences",
+      "Publisher": "Springer",
+      "DOI": "10.1186/s13673-019-0195-4"
+    }
+  ]
+}

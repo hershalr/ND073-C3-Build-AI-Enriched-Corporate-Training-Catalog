@@ -1,0 +1,85 @@
+{
+  "@odata.etag": "\"0x8DF1FF79CACB958\"",
+  "name": "search-1790884495622-skillset",
+  "skills": [
+    {
+      "@odata.type": "#Microsoft.Skills.Text.LanguageDetectionSkill",
+      "name": "languageDetectionSkill",
+      "context": "/document",
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/content",
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "languageCode",
+          "targetName": "language"
+        }
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.KeyPhraseExtractionSkill",
+      "name": "keyPhraseExtractionSkill",
+      "context": "/document/content",
+      "defaultLanguageCode": "en",
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/content",
+          "inputs": []
+        },
+        {
+          "name": "languageCode",
+          "source": "/document/language",
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "keyPhrases",
+          "targetName": "keyPhrases"
+        }
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.V3.EntityRecognitionSkill",
+      "name": "entityRecognitionSkill",
+      "context": "/document/content",
+      "categories": [
+        "Person",
+        "Location",
+        "Organization"
+      ],
+      "defaultLanguageCode": "en",
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/content",
+          "inputs": []
+        },
+        {
+          "name": "languageCode",
+          "source": "/document/language",
+          "inputs": []
+        }
+      ],
+      "outputs": [
+        {
+          "name": "persons",
+          "targetName": "persons"
+        },
+        {
+          "name": "locations",
+          "targetName": "locations"
+        },
+        {
+          "name": "organizations",
+          "targetName": "organizations"
+        }
+      ]
+    }
+  ]
+}

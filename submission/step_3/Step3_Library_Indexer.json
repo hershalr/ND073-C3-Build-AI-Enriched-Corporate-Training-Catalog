@@ -1,0 +1,82 @@
+{
+  "name": "search-1790884495622-indexer",
+  "description": null,
+  "dataSourceName": "search-1790884495622-datasource",
+  "skillsetName": "search-1790884495622-skillset",
+  "targetIndexName": "search-1790884495622",
+  "disabled": null,
+  "schedule": {
+    "interval": "PT5M",
+    "startTime": "2026-10-01T20:07:27.072Z"
+  },
+  "parameters": {
+    "batchSize": null,
+    "maxFailedItems": -1,
+    "maxFailedItemsPerBatch": -1,
+    "base64EncodeKeys": null,
+    "configuration": {
+      "parsingMode": "default",
+      "dataToExtract": "contentAndMetadata"
+    }
+  },
+  "fieldMappings": [
+    {
+      "sourceFieldName": "metadata_storage_name",
+      "targetFieldName": "title",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "metadata_storage_path",
+      "targetFieldName": "id",
+      "mappingFunction": {
+        "name": "base64Encode",
+        "parameters": {
+          "useHttpServerUtilityUrlTokenEncode": false
+        }
+      }
+    }
+  ],
+  "outputFieldMappings": [
+    {
+      "sourceFieldName": "/document/content/keyPhrases",
+      "targetFieldName": "keyPhrases",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/content/persons",
+      "targetFieldName": "persons",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/content/locations",
+      "targetFieldName": "locations",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/content/organizations",
+      "targetFieldName": "organizations",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/PublicationName",
+      "targetFieldName": "PublicationName",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/Publisher",
+      "targetFieldName": "Publisher",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/DOI",
+      "targetFieldName": "DOI",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/PublicationDate",
+      "targetFieldName": "PublicationDate",
+      "mappingFunction": null
+    }
+  ],
+  "encryptionKey": null
+}

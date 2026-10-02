@@ -262,3 +262,9 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+# Local publish / zip deploy artifacts (do not commit)
+publish_out/
+publish2/
+deploy.zip
+bin/
+obj/

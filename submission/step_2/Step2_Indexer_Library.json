@@ -1,0 +1,64 @@
+{
+  "@odata.context": "https://catalog-search-1002.search.windows.net/$metadata#indexers/$entity",
+  "@odata.etag": "\"0x8DF2008C2B4E713\"",
+  "name": "search-1790884495622-indexer",
+  "description": null,
+  "dataSourceName": "search-1790884495622-datasource",
+  "skillsetName": "search-1790884495622-skillset",
+  "targetIndexName": "search-1790884495622",
+  "disabled": null,
+  "schedule": {
+    "interval": "PT5M",
+    "startTime": "2026-10-01T20:07:27.072Z"
+  },
+  "parameters": {
+    "batchSize": null,
+    "maxFailedItems": null,
+    "maxFailedItemsPerBatch": null,
+    "configuration": {
+      "parsingMode": "default",
+      "dataToExtract": "contentAndMetadata"
+    }
+  },
+  "fieldMappings": [
+    {
+      "sourceFieldName": "metadata_storage_name",
+      "targetFieldName": "title",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "metadata_storage_path",
+      "targetFieldName": "id",
+      "mappingFunction": {
+        "name": "base64Encode",
+        "parameters": {
+          "useHttpServerUtilityUrlTokenEncode": false
+        }
+      }
+    }
+  ],
+  "outputFieldMappings": [
+    {
+      "sourceFieldName": "/document/content/keyPhrases",
+      "targetFieldName": "keyPhrases",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/content/persons",
+      "targetFieldName": "persons",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/content/locations",
+      "targetFieldName": "locations",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/content/organizations",
+      "targetFieldName": "organizations",
+      "mappingFunction": null
+    }
+  ],
+  "cache": null,
+  "encryptionKey": null
+}

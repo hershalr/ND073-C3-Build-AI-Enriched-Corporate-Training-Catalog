@@ -1,0 +1,50 @@
+{
+  "@odata.context": "https://catalog-search-1002.search.windows.net/$metadata#indexers/$entity",
+  "@odata.etag": "\"0x8DF201E506A618C\"",
+  "name": "search-1790894939519-indexer",
+  "description": null,
+  "dataSourceName": "search-1790894939519-datasource",
+  "skillsetName": "search-1790894939519-skillset",
+  "targetIndexName": "search-1790894939519",
+  "disabled": null,
+  "schedule": {
+    "interval": "PT5M",
+    "startTime": "2026-10-01T22:54:28.773Z"
+  },
+  "parameters": {
+    "batchSize": null,
+    "maxFailedItems": -1,
+    "maxFailedItemsPerBatch": -1,
+    "configuration": {}
+  },
+  "fieldMappings": [],
+  "outputFieldMappings": [
+    {
+      "sourceFieldName": "/document/keyPhrases",
+      "targetFieldName": "keyPhrases",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/persons",
+      "targetFieldName": "persons",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/locations",
+      "targetFieldName": "locations",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/organizations",
+      "targetFieldName": "organizations",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/matchedInstructors/*/description",
+      "targetFieldName": "instructorProfiles",
+      "mappingFunction": null
+    }
+  ],
+  "cache": null,
+  "encryptionKey": null
+}
