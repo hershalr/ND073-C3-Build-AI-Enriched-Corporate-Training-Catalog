@@ -15,11 +15,12 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     
-    <!--This demo uses the Buefy framework for controls, layout, and styling-->
+    <!--This demo uses Bulma + Buefy for controls, layout, and styling-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.8.55/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
-    <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
-    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/buefy@0.9.22/dist/buefy.min.css">
+    <script src="https://unpkg.com/buefy@0.9.22/dist/buefy.min.js"></script>
 
 </head>
 <body>
@@ -46,10 +47,12 @@
                     </div>
                 </div>
             </div>
+            <p v-if="errorMsg" class="has-text-danger">{{ errorMsg }}</p>
             <div class="block">
                 <b-field label="Filter on rating">
-                    <b-slider :min="0" :max="1" step="0.1" v-model="rating_average" v-on:change="doSearch" >
-                        <template v-for="val in [0, 0.2, 0.4, 0.6, 0.8, 1]">
+                    <!-- CSV rating_average is typically ~4–5; max=1 hid almost all courses -->
+                    <b-slider :min="0" :max="5" step="0.1" v-model="rating_average" v-on:change="doSearch" >
+                        <template v-for="val in [0, 1, 2, 3, 4, 5]">
                             <b-slider-tick :value="val" :key="val">{{ val }}</b-slider-tick>
                         </template>
                     </b-slider>
@@ -69,7 +72,7 @@
                     <div class="is-size-4">{{course.title}}</div>
                 </div>
                 <div class="block mt-0">
-                    <div class="is-size-5">{{course.summary}}</div>
+                    <div class="is-size-5">{{course.description}}</div>
                 </div>
                 <div class="columns">
                     <div class="column is-2">
@@ -95,13 +98,19 @@
 <script>
     /* 
         The following two constants configure this for your Cognitive Search. 
-        api-key is the key is found under 'Keys'
-        serviceUrl is found in the Overview
+        api-key is the query key found under 'Keys'
+        serviceUrl is found in the Overview (e.g. https://catalog-search-hr0912.search.windows.net)
+        Replace azuretable-index below if Import wizard used a different courses index name.
     */
     const opts = {
-        headers: {'Content-Type': 'application/json', 'api-key':'<insert key here>'}
+        headers: {'Content-Type': 'application/json', 'api-key':'<insert-query-key>'}
     }
-    const serviceUrl = 'https://<insert service name here>.search.windows.net'
+    const serviceUrl = 'https://catalog-search-1002.search.windows.net'
+
+    // Required so b-slider / b-checkbox render with Bulma styles (otherwise ticks show as "012345")
+    if (window.Buefy) {
+        Vue.use(Buefy)
+    }
     
     /* 
         This demo app uses Vue.js, a progressive framework for building user interfaces.  
@@ -115,8 +124,12 @@
                 searchTerm: 'azure',
                 rating_average: 0,
                 availableFacets: [],
-                myfacets: []
+                myfacets: [],
+                errorMsg: null
             }
+        },
+        mounted: function(){
+            this.doSearch()
         },
         /*
             To call the Cognitive Search API, we utilize axios, a lightweight, promise based HTTP client. 
@@ -128,11 +141,16 @@
         */
         methods: {
             doSearch: function(event){
+                this.errorMsg = null
                 axios
                     .get(`${this.baseUrl}&search=${encodeURIComponent(this.searchTerm)}&${this.filter}&facet=level`, opts)
                     .then(response => {
                         this.results = response.data.value; 
-                        this.availableFacets = response.data['@search.facets'].level;
+                        this.availableFacets = (response.data['@search.facets'] || {}).level || [];
+                    })
+                    .catch(err => {
+                        this.errorMsg = (err && err.message) ? err.message : 'Search failed'
+                        this.results = []
                     })
             },
             doRefresh: function(event){
@@ -157,7 +175,7 @@
                 return f;
             },
             baseUrl: function(){
-                return `${serviceUrl}/indexes/azuretable-index/docs?api-version=2020-06-30`
+                return `${serviceUrl}/indexes/search-1790894939519/docs?api-version=2020-06-30`
             }
         }
     })

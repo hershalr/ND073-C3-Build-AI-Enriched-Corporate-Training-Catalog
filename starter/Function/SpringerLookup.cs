@@ -1,32 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
+using System.Net;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Udacity.springerlookupdemo
 {
-    
-    public static class SpringerLookup
+    public class SpringerLookup
     {
-        
-        /* 
+        static readonly string apikey = "7fc47d5599e50f2a9994ce32c6ca8030";
+        static readonly string springerapiendpoint = "https://api.springernature.com/openaccess/json";
 
-          This is where you will configure your Spring API Key
-          
-        */
-        static readonly string apikey = "<insert API credential here>";
-        static readonly string springerapiendpoint = "http://api.springernature.com/openaccess/json";
-
-        #region Class used to deserialize the request
         private class InputRecord
         {
             public class InputRecordData
@@ -42,9 +27,6 @@ namespace Udacity.springerlookupdemo
         {
             public List<InputRecord> Values { get; set; }
         }
-        #endregion
-
-        #region Classes used to serialize the response
 
         private class OutputRecord
         {
@@ -71,96 +53,93 @@ namespace Udacity.springerlookupdemo
         {
             public List<OutputRecord> Values { get; set; } = new();
         }
-        #endregion
 
-        [FunctionName("SpringerLookup")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log)
+        [Function("SpringerLookup")]
+        public async Task<HttpResponseData> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req,
+            FunctionContext executionContext)
         {
-           log.LogInformation("Entity Search function: C# HTTP trigger function processed a request.");
+            var log = executionContext.GetLogger("SpringerLookup");
+            log.LogInformation("SpringerLookup isolated HTTP trigger processed a request.");
 
-            var response = new WebApiResponse
-            {
-                Values = new List<OutputRecord>()
-            };
-
-            string requestBody = new StreamReader(req.Body).ReadToEnd();
+            var responsePayload = new WebApiResponse { Values = new List<OutputRecord>() };
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var data = JsonConvert.DeserializeObject<WebApiRequest>(requestBody);
 
-            // Do some schema validation
-            if (data == null)
+            if (data?.Values == null)
             {
-                return new BadRequestObjectResult("The request schema does not match expected schema.");
-            }
-            if (data.Values == null)
-            {
-                return new BadRequestObjectResult("The request schema does not match expected schema. Could not find values array.");
+                var bad = req.CreateResponse(HttpStatusCode.BadRequest);
+                await bad.WriteStringAsync("The request schema does not match expected schema.");
+                return bad;
             }
 
-            // Calculate the response for each value.
             foreach (var record in data.Values)
             {
                 if (record == null || record.RecordId == null) continue;
-
                 var responseRecord = new OutputRecord { RecordId = record.RecordId };
-
                 try
                 {
-                    // Await the async method rather than blocking with .Result to avoid thread starvation.
                     responseRecord.Data = await GetEntityMetadata(record.Data?.ArticleName ?? string.Empty);
                 }
                 catch (Exception e)
                 {
-                    // Something bad happened, log the issue.
-                    var error = new OutputRecord.OutputRecordMessage
-                    {
-                        Message = e.Message
-                    };
-
-                    responseRecord.Errors.Add(error);
+                    responseRecord.Errors.Add(new OutputRecord.OutputRecordMessage { Message = e.Message });
                 }
                 finally
                 {
-                    response.Values.Add(responseRecord);
+                    responsePayload.Values.Add(responseRecord);
                 }
             }
 
-            return (ActionResult)new OkObjectResult(response);
+            var ok = req.CreateResponse(HttpStatusCode.OK);
+            ok.Headers.Add("Content-Type", "application/json; charset=utf-8");
+            await ok.WriteStringAsync(JsonConvert.SerializeObject(responsePayload));
+            return ok;
         }
 
-        #region Methods to call the Springer API
-        
-        
         private static async Task<OutputRecord.OutputRecordData> GetEntityMetadata(string title)
         {
-            var uri = springerapiendpoint + "?q=title:\"" + title + "\"&api_key=" + apikey;
+            // Basic Open Access plan: field qualifiers like title: are PREMIUM (403).
+            // Use a quoted free-text query instead. Strip .pdf if ArticleName is a blob filename.
+            var cleaned = (title ?? string.Empty).Trim();
+            if (cleaned.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                cleaned = cleaned[..^4];
+            }
+
+            var q = Uri.EscapeDataString("\"" + cleaned + "\"");
+            var uri = springerapiendpoint + "?q=" + q + "&api_key=" + Uri.EscapeDataString(apikey) + "&p=1";
             var result = new OutputRecord.OutputRecordData();
 
-            using (var client = new HttpClient())
-            using (var request = new HttpRequestMessage {
+            using var client = new HttpClient();
+            using var request = new HttpRequestMessage
+            {
                 Method = HttpMethod.Get,
                 RequestUri = new Uri(uri)
-            })
-            {
-                var httpResponse = await client.SendAsync(request);
-                httpResponse.EnsureSuccessStatusCode();
-                string responseBody = await httpResponse.Content.ReadAsStringAsync();
-                var springerresults = JObject.Parse(responseBody);
-                var parsedresults = springerresults["records"]?.Children().ToList() ?? new List<JToken>();
+            };
+            request.Headers.TryAddWithoutValidation("X-ApiKey", apikey);
 
-                foreach (var t in parsedresults)
-                {
-                    result.DOI = t.Value<string>("doi") ?? result.DOI;
-                    result.PublicationDate = t.Value<string>("publicationDate") ?? result.PublicationDate;
-                    result.PublicationName = t.Value<string>("publicationName") ?? result.PublicationName;
-                    result.Publisher = t.Value<string>("publisher") ?? result.Publisher;
-                }
+            var httpResponse = await client.SendAsync(request);
+            // Do NOT throw on Springer 404/non-2xx — AI Search treats skill record
+            // Errors as indexer failures. Empty metadata is acceptable for misses.
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return result;
+            }
+
+            string responseBody = await httpResponse.Content.ReadAsStringAsync();
+            var springerresults = JObject.Parse(responseBody);
+            var parsedresults = springerresults["records"]?.Children().ToList() ?? new List<JToken>();
+
+            foreach (var t in parsedresults)
+            {
+                result.DOI = t.Value<string>("doi") ?? result.DOI;
+                result.PublicationDate = t.Value<string>("publicationDate") ?? result.PublicationDate;
+                result.PublicationName = t.Value<string>("publicationName") ?? result.PublicationName;
+                result.Publisher = t.Value<string>("publisher") ?? result.Publisher;
             }
 
             return result;
         }
-
-        
-        #endregion
     }
 }
